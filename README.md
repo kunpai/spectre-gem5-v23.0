@@ -33,6 +33,11 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 CMD ["/bin/bash"]
 ```
 
+Building on macOS(Source: [Blog](https://everythingdevops.dev/building-x86-images-on-an-apple-m1-chip/)):
+```bash
+docker buildx build --platform=linux/amd64 -t spectre-intel .
+```
+
 Then, put `spectre_v1.c` into the Docker image and compile it with the following command:
 ``` bash
 gcc -o spectre_v1 spectre_v1.c -static -std=c99
