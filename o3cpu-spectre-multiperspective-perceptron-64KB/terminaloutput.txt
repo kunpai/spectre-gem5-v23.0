@@ -1,0 +1,64 @@
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version DEVELOP-FOR-23.1
+gem5 compiled Nov  3 2023 17:33:33
+gem5 started Nov  4 2023 13:17:25
+gem5 executing on sabro, pid 2412088
+command line: ./build/ALL/gem5.opt configs/learning_gem5/part1/two_level.py /home/paikunal/spectre_gccHashiru
+
+Global frequency set at 1000000000000 ticks per second
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+src/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+src/base/statistics.hh:279: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+system.remote_gdb: Listening for connections on port 7000
+Beginning simulation!
+src/sim/simulate.cc:194: info: Entering event queue @ 0.  Starting simulation...
+src/sim/syscall_emul.hh:1014: warn: readlink() called on '/proc/self/exe' may yield unexpected results in various settings.
+      Returning '/home/paikunal/spectre_gccHashiru'
+src/sim/mem_state.cc:443: info: Increasing stack size by one page.
+Spectre PoC
+Using a cache hit threshold of 80.
+Build: RDTSCP_SUPPORTED MFENCE_SUPPORTED CLFLUSH_SUPPORTED INTEL_MITIGATION_DISABLED LINUX_KERNEL_MITIGATION_DISABLED 
+Reading 40 bytes:
+Reading at malicious_x = 0xffffffffffdd6d48... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d49... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d4a... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d4b... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d4c... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d4d... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d4e... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d4f... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d50... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d51... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d52... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d53... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d54... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d55... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d56... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d57... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d58... Success: 0x61=’a’ score=1 
+Reading at malicious_x = 0xffffffffffdd6d59... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d5a... Success: 0x65=’e’ score=1 
+Reading at malicious_x = 0xffffffffffdd6d5b... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d5c... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d5d... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d5e... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d5f... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d60... Success: 0x61=’a’ score=1 
+Reading at malicious_x = 0xffffffffffdd6d61... Success: 0x6D=’m’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d62... Success: 0x69=’i’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d63... Success: 0x73=’s’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d64... Success: 0x68=’h’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d65... Success: 0xFF=’?’ score=0 
+Reading at malicious_x = 0xffffffffffdd6d66... Success: 0x4F=’O’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d67... Success: 0x73=’s’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d68... Success: 0x73=’s’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d69... Success: 0x69=’i’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d6a... Success: 0x66=’f’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d6b... Success: 0x72=’r’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d6c... Success: 0x61=’a’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d6d... Success: 0x67=’g’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d6e... Success: 0x65=’e’ score=2 
+Reading at malicious_x = 0xffffffffffdd6d6f... Success: 0x2E=’.’ score=2 
+Exiting @ tick 3019915266000 because exiting with last active thread context
