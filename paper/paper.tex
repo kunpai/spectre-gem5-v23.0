@@ -44,9 +44,11 @@
 \author{Frank Gomez}
 \affiliation{University of California, Davis}
 
-% \begin{abstract}
-% Your abstract.
-% \end{abstract}
+\begin{abstract}
+This project presents a comprehensive investigation into Spectre attacks on x86-based processors, focusing initially on both in-order and out-of-order processors and their susceptibility to speculative execution vulnerabilities. The study employs gem5 v23.0 and Spectre V1, which was compiled on an Ubuntu 16.04 LTS Docker shell with \verb|gcc 4.8.5|. Initial observations highlight the inherent resistance of in-order processors, leading to a focus on only out-of-order processors. Methodological refinements were also built upon the base experiment of running Spectre. These refinements included incorporating extended training periods and exploring the impact of branch predictor state space on Spectre susceptibility. Results confirmed negative correlations between the effectiveness of Spectre and the presence of statistical correctors, loop predictors, a smaller state space, and a less number of training iterations of the branch predictor. The introduction of an extended training period revealed the inherent property of every branch predictor in an out-of-order processor to be vulnerable to Spectre. Therefore, our results help to design the characteristics of a Spectre-resistant branch predictor, proposing features such as statistical correctors, loop predictors, a larger state space, and the use of perceptions. These features aim to prolong the training period and mitigate biased branches, thus reducing the leakage of sensitive information. In conclusion, our findings contribute valuable insights into processor vulnerabilities, offering practical considerations for enhancing Spectre resistance. The presented methodology and results lay the groundwork for future research in developing secure branch predictors and mitigating the impact of speculative execution attacks on modern processors.
+
+Note: the artifacts for our project can be found \href{https://github.com/kunpai/spectre-gem5-v23.0}{here}.
+\end{abstract}
 
 \maketitle
 
@@ -56,14 +58,12 @@ In the ever-evolving landscape of computer security, vulnerabilities stemming fr
 
 Speculative execution, a performance optimization technique employed by contemporary processors, allows the execution of instructions that are predicted to be needed in advance. While speculative execution improves system performance, it introduces a potential avenue for attackers to breach security measures by executing instructions that would not occur during normal program execution. The Spectre attack capitalizes on this vulnerability by manipulating the CPU's speculative execution process to gain access to the victim's memory and registers, ultimately disclosing sensitive data.
 
-This project aims to investigate the behavior of Spectre, a speculative prediction exploit, on various branch predictors available within the gem5 computer architecture simulator. The branch predictors in gem5, such as Tournament, TAGE, Local, Loop, and Bimodal, play a crucial role in guiding speculative execution and, therefore, present an ideal environment to test how their "smartness" affects Spectre attacks.
+This project aims to investigate the behavior of Spectre on various branch predictors available within the gem5 computer architecture simulator. The branch predictors in gem5, such as Tournament, TAGE, Local, Loop, and Bimodal, play a crucial role in guiding speculative execution (by predicting the future direction of branches) and, therefore, present an ideal environment to test how their ``smartness" affects Spectre attacks.
 
-We will also provide an overview of the types of Spectre attacks and their underlying principles. Additionally, we will introduce the gem5 simulator and its relevant CPU models, emphasizing the importance of branch predictors in the context of speculative execution. By exploring these aspects, we seek to contribute to the understanding of Spectre attacks and the development of its mitigations within computer architecture, ultimately strengthening the security of digital systems in an era where data protection is of paramount importance.
-
+We will also provide an overview of the types of Spectre attacks and their underlying principles. Additionally, we will introduce the gem5 simulator and its relevant CPU models and branch predictors. We would like to explore how various factors within these branch predictors affect the efficacy of Spectre. By exploring these aspects, we seek to contribute to the understanding of Spectre attacks and the development of their mitigations, ultimately strengthening the security of digital systems in an era where data protection is of paramount importance.
 
 
 \section{Background}
-\label{sec:examples}
 
 \subsection{What are Spectre attacks?}
 
@@ -75,7 +75,7 @@ Spectre attacks work by tricking the CPU into speculatively executing instructio
 
 \subsection{Types of Spectre Attacks}
 
-There are a number of different types of Spectre attacks, but they can all be classified into two main categories\cite{kocher2020spectre}:
+There are several different types of Spectre attacks, but they can all be classified into two main categories\cite{kocher2020spectre}:
 
 \begin{itemize}
 \item \underline{Exploiting Conditional Branches}: These attacks exploit the CPU's branch predictor to mispredict the direction of a branch, causing the CPU to speculatively execute code that would not have been executed otherwise. This incorrect speculative execution allows an attacker to read secret information stored in the program’s address space.
@@ -131,28 +131,9 @@ The analysis code is responsible for exploiting the victim function and deducing
   \item The code incorporates cache line flushing techniques (using the \texttt{clflush} instruction) to control cache behavior and measure access times. It employs different techniques depending on the availability of instructions and features on the target platform.
 \end{itemize}
 
-Therefore, this code employs the first variant of Spectre, combined with a timing attack as well.
+The main function has a training period of 1000 iterations, and its goal is to train the branch predictor to predict in a certain direction, before calling the victim function and having that direction predicted for the victim function as well.
 
-
-% \subsection{Tables and Figures}
-
-% Use \texttt{tabular} for basic tables --- see Table~\ref{tab:widgets}, for example. You can upload a figure (JPEG, PNG or PDF) using the files menu. To include it in your document, use the \texttt{includegraphics} command (see the comment below in the source code).
-
-% Commands to include a figure:
-%\begin{figure}
-%\includegraphics[width=\textwidth]{your-figure's-file-name}
-%\caption{\label{fig:your-figure}Caption goes here.}
-%\end{figure}
-
-% \begin{table}
-% \centering
-% \begin{tabular}{l|r}
-% Item & Quantity \\\hline
-% Widgets & 42 \\
-% Gadgets & 13
-% \end{tabular}
-% \caption{\label{tab:widgets}An example table.}
-% \end{table}
+Therefore, this code employs the first variant of Spectre.
 
 \subsection{What is gem5?}
 
@@ -166,15 +147,15 @@ Although gem5 boasts a wide range of CPU models, the models of interest for this
     \item \underline{O3CPU}: In contrast to MinorCPU, O3CPU is an out-of-order model that features a more complex pipeline with stages including Fetch, Decode, Rename, Issue/Execute/Writeback, and Commit. This model is well-suited for in-depth analysis of speculative execution and its interactions with different branch predictors.\cite{butko2015design}
 \end{itemize}
 
-By utilizing these CPU models within gem5, we gain the capacity to explore and assess various architectural scenarios, making a more holistic examination of Spectre attacks and the impact of branch predictors on it.
+By utilizing these CPU models within gem5, we gain the capacity to explore and assess various architectural scenarios, making a more holistic examination of Spectre attacks and the impact of branch predictors on them.
 
 \subsection{Branch Predictors in gem5}
 
 Looking at the reference code of gem5's Branch Predictors, we can say that gem5 has the following Branch Predictors\cite{Branch}:
 
 \begin{itemize}
-    \item \underline{Tournament Branch Predictor}: The tournament predictor as described was originally designed to use one of each category of branch predictors: a local and global. The history of each branch is both independent (local) and on a global level.\cite{mcfarling1993combining}
-    \item \underline{TAGE Branch Predictor}: This branch predictor relies on a default tagless predictor backed with a plurality of tagged predictor components, indexed using different history lengths. These history lengths form a geometric series. The prediction is provided either by a tag match on a tagged predictor component or by the default predictor. In case of multiple hits, the prediction is provided by the tag matching table with the longest history.\cite{seznec2006case}
+    \item \underline{Tournament Branch Predictor}: The tournament predictor as described was originally designed to use one of each category of branch predictors: local and global. The history of each branch is both independent (local) and on a global level.\cite{mcfarling1993combining}
+    \item \underline{TAGE Branch Predictor}: This branch predictor relies on a default tagless predictor backed with a plurality of tagged predictor components, indexed using different history lengths. These history lengths form a geometric series. The prediction is provided either by a tag match on a tagged predictor component or by the default predictor. In case of multiple hits, the prediction is provided by the tag-matching table with the longest history.\cite{seznec2006case}
     \item \underline{Local Branch Predictor}: The local branch predictor considers the history of each branch independently and takes advantage of repetitive patterns. Since the histories of branches are independent, it is referred to as local branch prediction.\cite{mcfarling1993combining}
     \item \underline{Bimodal Branch Predictor}: This predictor has a table containing \texttt{n} entries and a 2-bit saturating counter per entry is indexed via the lower-order bits of the PC. The 2 bits are then used as a simple state machine. At each update, the 2-bit counter will be incremented or decremented according to the true result of the branch.\cite{peress2008historical}
     \item \underline{Multiperspective Perceptron Predictor}: This predictor is a hashed perceptron predictor that uses both hashed global path and pattern histories. It also uses a variety of other kinds of features, like an inner-most loop iteration counter and a "modulo-based history",  based on various organizations of branch histories. To access the prediction tables, a feature's hash value is calculated by incorporating recent historical data and hashing it alongside the branch's address to be predicted. This hash value is then adjusted modulo the size of the prediction table. The weight associated with this particular index in the table is retrieved, and all these weights for various features are combined and subjected to a threshold to determine whether the prediction is for the branch to be taken or not.\cite{jimenez2016multiperspective}
@@ -182,31 +163,11 @@ Looking at the reference code of gem5's Branch Predictors, we can say that gem5 
 
 We will run the Spectre binary on each of these branch predictors in gem5. We plan on having separate configurations for each branch predictor.
 
-\subsection{Additional Branch Predictor Components}
-There are certain components that are added onto branch predictors in gem5. These components are:
-
-\begin{itemize}
-    \item \underline{Loop Predictor}: This predictor involves the use of explicit loop detection for improving the prediction accuracy of loop branches and post-loop branches. Loop detection is implemented by storing information about dynamic instruction sequences that are terminated at backward branches. Additional logic checks for repeating instruction sequences are also implemented. This helps to detect loops.\cite{joseph2000improving}
-    \item \underline{Statistical Corrector Predictor}: A downside with branch predictors is that sometimes they fail at predicting statistically biased branches e.g. branches that have only a small bias towards a direction, but are not strongly correlated with the global history path. The Statistical Corrector predictor to better predict this class of statistically biased branches. The predictor aims at detecting the unlikely predictions and to revert them.\cite{seznec2016tage}
-\end{itemize}
-
-These additional features are added onto the TAGE predictor in gem5, making the LTAGE (loop predictor) and the TAGE\_SC\_L (both loop predictor and statistical corrector predictor) predictors.
-
-\section{Methodology}
-
-\subsection{Configurations}
-
-The baseline models used will be an x86-based in-order processor and an out-of-order processor.
-
-We will take each processor and pair it up with one of the aforementioned branch predictors and measure some stats from its run that would help us determine how effective Spectre was on it.
-
-Overall, Table I. provides the configurations in more detail:
-
-\begin{table}
+\begin{table*}
 \centering
 \caption{List of Configurations}
 \small
-\begin{tabular}{|p{0.45\linewidth}|p{0.45\linewidth}|}
+\begin{tabular}{p{0.45\linewidth}p{0.45\linewidth}}
 % \begin{tabular}{|l|l|}
 \hline
 X86O3CPU & X86MinorCPU \\
@@ -224,49 +185,55 @@ Multiperspective Perceptron TAGE BP (8 kB History size) & Multiperspective Perce
 Multiperspective Perceptron TAGE BP (64 kB History size) & Multiperspective Perceptron TAGE BP (64 kB History size) \\
 \hline
 \end{tabular}
-\end{table}
+\end{table*}
 
+\subsection{Additional Branch Predictor Components}
+Certain components are added onto a base branch predictor in gem5. These components are:
 
-% \begin{table}
-% \centering
-% \caption{CPU Types and Branch Predictors}
-% \begin{tabular}{|c|c|c|c|c|c|}
-% \hline
-% CPU Type & Local BP & Tournament BP & TAGE BP & Loop BP & Bimodal BP \\
-% \hline
-% MinorCPU & Config 1 & Config 2 & Config 3 & Config 4 & Config 5 \\
-% O3CPU & Config 6 & Config 7 & Config 8 & Config 9 & Config 10 \\
-% \hline
-% \end{tabular}
-% \end{table}
+\begin{itemize}
+    \item \underline{Loop Predictor}: This predictor involves the use of explicit loop detection for improving the prediction accuracy of loop branches and post-loop branches. Loop detection is implemented by storing information about dynamic instruction sequences that are terminated at backward branches. Additional logic checks for repeating instruction sequences are also implemented. This helps to detect loops.\cite{joseph2000improving}
+    \item \underline{Statistical Corrector Predictor}: A downside with branch predictors is that sometimes they fail at predicting statistically biased branches e.g. branches that have only a small bias towards a direction, but are not strongly correlated with the global history path. The Statistical Corrector predictor to better predict this class of statistically biased branches. The predictor aims at detecting the unlikely predictions and to revert them.\cite{seznec2016tage}
+\end{itemize}
+
+These additional features are added onto the TAGE predictor in gem5, making the LTAGE (loop predictor) and the TAGE\_SC\_L (both loop predictor and statistical corrector predictor) predictors. They are also added to the Multiperspective Perceptron TAGE BP by default. 
+
+\section{Methodology}
+
+\subsection{Configurations}
+
+The baseline models used will be an x86-based in-order processor and an out-of-order processor.
+
+We will pair each processor up with one of the aforementioned branch predictors and measure some stats from its run that would help us determine how effective Spectre was on it.
+
+Overall, Table I. provides the configurations in more detail:
 
 \subsubsection{Statistics of Interest}
 
 Spectre has already been reproduced in gem5 on the ARM microarchiteture\cite{10.1145/3447852.3458715}, and using the syscall emulation mode in the x86 ISA\cite{jasonspectre}. As part of their methodology, Ayoub and Maurice found that some of the best stats to measure from gem5 that show proof of a more effective Spectre attack are:
 
 \begin{itemize}
-  \item \underline{Number of Cycles Taken}: This metric quantifies the cycles taken for the workload. A smaller number of cycles may indicate a more effective Spectre attack.
-  \item \underline{Number of Cache Misses}: Cache misses are crucial because they can reveal the attack's memory access patterns and timing. A significant number of cache misses may indicate suspicious behavior.
-  \item \underline{Number of Mispredicted Branches}: Mispredicted branches are indicative of the attack's impact on the branch predictor. An increase in mispredicted branches may suggest interference with the speculative execution process.
+  \item \underline{Seconds}: The lower the seconds, the faster a Spectre attack took.
+  \item \underline{Number of Mispredicted Branches}: Mispredicted branches are indicative of the smartness of the branch predictor. Lower mispredicts imply that a branch predictor can gauge the pattern across the program more efficiently, making it quicker to train.
 \end{itemize}
 
-We will measure these stats as a metric for a run of the Spectre attack\cite{SPECTREPRog} with different branch predictors on the x86 ISA, with the method laid out by Lowe-Power in his blog post\cite{jasonspectre}.
+We will measure these stats as a metric for a run of the Spectre attack\cite{SPECTREPRog} with different branch predictors on the x86 ISA, with the method laid out by Lowe-Power in his blog post\cite{jasonspectre}. We will also measure the percentage of the secret string that was revealed through the output of the Spectre program.
 
 \subsubsection{A Successful Run}
-
-To know if a run of Spectre was successful, we will look at the terminal output for leaked information, which is part of the Spectre program we are using. On gem5, a successful run looks like FIGURE 1.
-
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{spectreterminal.png}
     \caption{Terminal output of a successful Spectre attack in gem5.}
 \end{figure}
 
+To know if a run of Spectre was successful, we will look at the terminal output for leaked information, which is part of the Spectre program we are using. On gem5, a successful run looks like FIGURE 1.
+
+
+
 \section{Results}
 
 \subsection{MinorCPU}
 
-The MinorCPU does not show a successful Spectre attack for any branch predictor. The expected secret string is "The Magic Words are Squeamish Ossifrage.", but any output of the attack when run with a branch predictor on the MinorCPU looks something like the following:
+The MinorCPU does not show a successful Spectre attack for any branch predictor. The expected secret string is ``The Magic Words are Squeamish Ossifrage.", but any output of the attack when run with a branch predictor on the MinorCPU looks something like the following:
 
 \begin{verbatim}
 Reading at malicious_x = 0xffffffffffdd6d48 
@@ -286,7 +253,7 @@ For the O3CPU, we noticed a higher success rate in the Spectre attack. All branc
 \centering
 \caption{Success Rate of Branch Predictors in the O3CPU with Training Period of 1000 iterations}
 \small
-\begin{tabular}{|p{0.45\linewidth}|p{0.45\linewidth}|}
+\begin{tabular}{p{0.45\linewidth}p{0.45\linewidth}}
 % \begin{tabular}{|l|l|}
 \hline
 Branch Predictor & \% of Secret String Revealed \\
@@ -305,22 +272,21 @@ Multiperspective Perceptron TAGE BP (64 kB) & 57.50\% \\
 \hline
 \end{tabular}
 \end{table}
-
-% COMPARE STATS OF INTEREST ACROSS all secret string 
+`
 
 \section{Discussion}
 
 \subsection{Impact of Dataflow}
 From our results, we can discern that Spectre does not work in an in-order processor in gem5. This is expected behavior.
 
-In an in-order processor, instructions are executed sequentially in the order they appear in the program. This means that instructions are processed one by one without reordering or speculative execution. Spectre attacks, on the other hand, rely on the processor's speculative predictions. 
+In an in-order processor, instructions are executed sequentially in the order they appear in the program. This means that instructions are processed one by one without reordering or speculative execution. Spectre attacks, on the other hand, rely on the processor's speculative predictions. Speculative execution also relies heavily on branch prediction. It leverages the predicted branch outcome to execute instructions along that path before the actual outcome is confirmed.
 
-Therefore, in-order processors are inherently less susceptible to Spectre attacks.
+Therefore, given no branch predictor could result in a successful Spectre attack, we can say in-order processors are inherently less susceptible to Spectre attacks than out-of-order processors.
 
 \subsection{Impact of Additional Components}
 Through our investigations, we find that adding a loop predictor or a statistical corrector makes a branch predictor more resistant to a Spectre attack.
 
-For example, the TAGE branch predictor was the most susceptible to the Spectre attack. From the results, we can notice that adding a loop predictor (LTAGE BP) slowed down the Spectre attack tremendously. However, the secret string was still revealed. But, adding a statistical corrector to the LTAGE branch predictor further slows down the Spectre attack. On top of slowing it down, in both variants of the TAGE\_SC\_L BP, the secret string is not fully revealed.
+For example, the TAGE branch predictor was the most susceptible to the Spectre attack. From the results, we noticed that adding a loop predictor (LTAGE BP) slowed down the Spectre attack tremendously. However, the secret string was still revealed. But, adding a statistical corrector to the LTAGE branch predictor further slows down the Spectre attack. On top of slowing it down, in both variants of the TAGE\_SC\_L BP, the secret string is not fully revealed.
 
 Even in the Multiperspective Perceptron, the variants that add a loop predictor and a statistical corrector (i.e., the Multiperspective Perceptron TAGE BP variants) slow down the time taken for a Spectre attack, and do not reveal the entire secret string.
 
@@ -334,21 +300,21 @@ Therefore, by adding these two components to the branch predictor, it becomes mo
 
 \subsection{Impact of ``Smartness" of BP}
 
-Our results indicate that the ``smartness" of the branch predictor, i.e., less training to get more accurate predictions, is a major factor in how susceptible it is to Spectre. The trend observed is that the more accurate the branch predictor is, the more susceptible it is to Spectre.
+Our results indicate that the ``smartness" of the branch predictor, i.e., less training to get more accurate predictions, is a major factor in how susceptible it is to Spectre. The trend observed is that the ``smarter" the branch predictor is, the more susceptible it is to Spectre.
 
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{BaselineBranchMispredicts.png}
+    \includegraphics[width=\linewidth]{Branch Mispredicts.png}
     \caption{Branch mispredictions per branch predictor type of a base Spectre attack in gem5.}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=\linewidth]{BaselineSeconds.png}
+    \includegraphics[width=\linewidth]{Seconds.png}
     \caption{Seconds taken to complete a base Spectre attack per branch predictor type in gem5.}
 \end{figure}
 
-If we were to look at the total branch mispredictions per branch predictor in gem5 in Fig. 2 and the time it took for the Spectre attack to complete, we can see that the ``smartest" branch predictor, the TAGE, with the least mispredictions, was the most susceptible to Spectre. It only took 0.008 seconds for the entire secret string to be revealed.
+If we were to look at the total branch mispredictions per branch predictor in gem5 in Fig. 2 and the time it took for the Spectre attack to complete, we can see that the ``smartest" branch predictor, the TAGE, with the least mispredictions, was the most susceptible to Spectre, using time as a metric for efficacy. It only took 0.008 seconds for the entire secret string to be revealed.
 
 Conversely, if we look at the Multiperspective Perceptron 64 kB branch predictor, the Spectre attack took the longest (3.02 seconds) and the branch predictor had the most mispredicts too. Even the secret string was not fully revealed.
 
@@ -359,6 +325,8 @@ TAGE predictors are known for their rapid training and accuracy. They use a comb
 Multiperspective Perceptron, on the other hand, is a more complex branch predictor. It uses perceptrons to capture various features and perspectives of the branch history. Training a structure such as the Multiperspective Perceptron, involves more extensive calculations and adjustments of weights. This process is more time-consuming compared to traditional table-based predictors like TAGE. Additionally, the Multiperspective Perceptron requires more training data and iterations to converge to an accurate prediction model, which contributes to a longer training time.\cite{jimenez2001dynamic}
 
 As a way to counter the downside of a huge training time, the MPP TAGE branch predictor was introduced, and it predicts better, as evident from Fig. 2. But the tradeoff is that it is more vulnerable to Spectre, as evident from Fig. 3.
+
+We can also explain the trends in the other branch predictors using their structure and prediction mechanisms.
 
 Local branch predictors make predictions based on the local history of a single branch instruction, typically using a small table for each instruction. The training of local predictors involves updating these local history tables when the branch outcome is known. Since the tables are small and specific to each branch instruction, training can be done quickly, but not as quickly as TAGE due to lack of parallelism.\cite{mcfarling1993combining}
 
@@ -384,8 +352,7 @@ To confirm our hypotheses, we took the Multiperspective Perceptron TAGE BP with 
 \centering
 \caption{Success Rate of Budget Bits of the Multiperspective Perceptron TAGE BP - 64 kB TAGE, LP and SC}
 \small
-\begin{tabular}{|p{0.45\linewidth}|p{0.45\linewidth}|}
-% \begin{tabular}{|l|l|}
+\begin{tabular}{p{0.45\linewidth}p{0.45\linewidth}}
 \hline
 Number of Budget Bits & \% of Secret String Revealed \\
 \hline
@@ -399,14 +366,20 @@ Number of Budget Bits & \% of Secret String Revealed \\
 \end{tabular}
 \end{table}
 
-Overall, it seems like the number of budget bits does not really impact the efficacy of Spectre, and this means that the state space is not a confirmed mitigation of Spectre. It has a tendency to reduce the efficacy, since it increases the state space, but does not have as large an effect on training the branch predictor in order to mispredict to have a confirmed correlation.  
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{SecondsAndIterations.png}
+    \caption{Seconds taken to complete a base Spectre attack per branch predictor type in gem5.}
+\end{figure*}
+
+While increasing the state space does not guarantee mitigation of Spectre, it can still be considered as a potential mitigation strategy, albeit not as strong as other approaches. Expanding the state space potentially increases the difficulty for attackers to manipulate the branch predictor and execute Spectre attacks. However, the effectiveness of this approach is not consistent and requires further research and validation. Ultimately, a combination of mitigation strategies, including increasing the state space alongside other techniques, is likely necessary for comprehensive protection against Spectre.
 
 % Since Spectre is based on training the branch predictor to predict in one direction, this can be performed on any branch predictor, and is a matter of chance.
 \subsection{Impact of Number of Tries}
 
 Since Spectre is based on training the branch predictor to predict in a certain direction, we also wanted to see if increasing the training period could reveal more of the secret string. So, we reran the configurations with a version of the Spectre binary that trains the branch predictor for \textit{twice} the number of iterations, i.e., 2000.
 
-gem5's MinorCPU still did not reveal any part of the secret string for any branch predictor.
+gem5's MinorCPU still did not reveal any part of the secret string for any branch predictor. Even with an extended training period, the MinorCPU configuration did not exhibit any susceptibility to Spectre attacks. The nature of the processor itself makes it more resistant to Spectre.
 
 Regarding the O3CPU, we observed an increase in the percentage of characters revealed in the secret string. Our findings are summarized in Table IV.
 
@@ -414,7 +387,7 @@ Regarding the O3CPU, we observed an increase in the percentage of characters rev
 \centering
 \caption{Success Rate of Branch Predictors in the O3CPU with Training Period of 2000 iterations}
 \small
-\begin{tabular}{|p{0.45\linewidth}|p{0.45\linewidth}|}
+\begin{tabular}{p{0.45\linewidth}p{0.45\linewidth}}
 % \begin{tabular}{|l|l|}
 \hline
 Branch Predictor & \% of Secret String Revealed \\
@@ -433,6 +406,39 @@ Multiperspective Perceptron TAGE BP (64 kB) & 100\% \\
 \hline
 \end{tabular}
 \end{table}
+
+Remarkably, the O3CPU configuration exhibited an increase in the percentage of characters revealed in the secret string, indicating that a more extended training period positively influenced the success of the Spectre attack. Notably, the success rates were consistently high across various branch predictors, reaffirming the susceptibility of O3CPU to attacks based around exploiting speculative prediction.
+
+This finding aligns with the overarching statement that ``\textit{any branch predictor can be trained to predict in a specific direction}".
+
+In cases where the Spectre attack succeeded completely with 1000 iterations, it takes much shorter with 2000 iterations. This is because a longer training period of the branch predictor implies that it is surer of the direction to predict. the extended training may have introduced more consistent or reliable predictions. The additional training data also has reinforced the existing prediction patterns, making the speculative execution more efficient and reducing the time required for the Spectre attack to successfully leak sensitive information.
+
+In cases where the Spectre attack did not succeed completely with 1000 iterations, it also takes much shorter with 2000 iterations, since we are training the branch predictor more effectively. The increased number of iterations enhances the training of the branch predictor, allowing the attacker to more effectively manipulate speculative execution and extract targeted information. This shorter timeframe for success in the extended iteration scenario is attributed to the refined training of the branch predictor.
+
+An outlier in these trends is the Tournament branch predictor, which takes longer with 2000 iterations, even though it reveals the entire secret string in both, and the Multiperspective Perceptron 64kB, which reveals a little bit more of the secret string with 2000 iterations, but still does not reveal it entirely. 
+
+The reason for these outliers is that the tournament predictor has a more complex training mechanism. This branch predictor combines multiple branch predictors, such as local and global predictors, to select the most accurate prediction for a given branch instruction, in a tournament format. So, every iteration takes a fixed amount of time to train the branch predictor. This is why more iterations takes longer.
+
+Similarly, for the Multiperspective Perceptron, since every prediction considers a lot of factors, the extended training may introduce more nuanced and intricate patterns, making the prediction process more complex and time-consuming. The Multiperspective Perceptron likely requires additional iterations to refine its understanding of the branching behavior and relationships between different factors. Since reading the data from the cache in an unsuccessful attempt also takes longer than a successful attempt, both these delays add up to make this branch predictor have a longer delay.
+
+Overall, our results imply that every branch predictor can be trained to predict in a certain direction, and is susceptible to a Spectre attack. An attacker, with a sufficiently long number of training iterations, can exploit the branch predictor to reveal secret information.
+
+\section{A Secure Branch Predictor}
+
+With a large enough training period, Spectre would be able to reveal details from memory no matter the branch predictor. The goal of the branch predictor in this case is to extend the time period it takes for training and try to mitigate biased branches as much as possible so that fewer details of the memory are leaked out.
+
+Given the above analysis, we tried to ask the question: \textit{What would the characteristics of the most Spectre-resistant branch predictor look like?}
+
+We conclude it would have the following features:
+\begin{itemize}
+    \item A statistical corrector and a loop predictor to make sure that the branch predictor cannot be trained to predict in one direction very quickly.
+    \item A larger state space, meaning that it has a larger history table of branches' results.
+    \item Perceptrons to capture various features and perspectives of the branch history. Training a structure like this involves more extensive calculations and adjustments of weights, which is more holistic than a traditional table-based system.
+\end{itemize}
+
+\section{Conclusion}
+Our investigation into Spectre attacks on x86 processors has shed light on critical insights, revealing the vulnerabilities and potential mitigations within diverse branch predictors. Through our research, we confirmed the effectiveness of statistical correctors and loop predictors in reducing Spectre's impact. Notably, rapidly trained branch predictors were found to be more susceptible. This analysis led to the exploration of a Spectre-resistant branch predictor, which we characterize to be one with a statistical corrector, loop predictor, larger state space, and perceptrons. These features advocate for a holistic training approach, serving not only to extend the training period but also to reduce swift directional predictions, thereby mitigating Spectre's potential. With speculative execution attacks like Spectre posing an ongoing threat, our continued research efforts remain crucial in fortifying processors against these sophisticated threats.
+
 
 
 % \subsection{Mathematics}
